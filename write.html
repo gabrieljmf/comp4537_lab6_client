@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <button onclick="location.href = './search.html'">Go to Search</button>
+    <br />
+    <br />
+    <label for="word">Word:</label>
+    <input type="text" id="word" name="word" placeholder="Enter name of word" />
+    <br />
+    <br />
+    <textarea
+      id="definition"
+      placeholder="Enter the definition of the word"
+      rows="4"
+      cols="50"
+
+    ></textarea>
+    <br />
+    <br />
+    <button type="button" onclick="post()">POST</button>
+    <button type="button" onclick="patch()">PATCH</button>
+    <br />
+    <br />
+    <div id="demo">No Response Yet!</div>
+    <script>
+      function post() {
+        const xhttp = new XMLHttpRequest();
+        const endPointRoot = "http://localhost:8888/api/v1/";
+        let word = document.getElementById("word");
+        let definition = document.getElementById("definition");
+        let params = `${definition.value}`;
+        let resource = "definition/";
+        if (word.value != "" && definition.value != "") {
+          xhttp.open("POST", endPointRoot + resource, true);
+          xhttp.setRequestHeader(
+            "Content-Type",
+            "application/x-www-form-urlencoded"
+          );
+          xhttp.send(params);
+          xhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+              console.log(this.responseText);
+              document.getElementById("demo").innerHTML = this.responseText;
+            }
+          };
+        }
+      }
+      
+      function patch() {
+        const xhttp = new XMLHttpRequest();
+        const endPointRoot = "http://localhost:8888/api/v1/";
+        let word = document.getElementById("word");
+        let definition = document.getElementById("definition");
+        let params = `${word.value}`;
+        let resource = "definition/";
+        if (word.value != "" && definition.value != "") {
+          xhttp.open("PATCH", endPointRoot + resource, true);
+          xhttp.setRequestHeader(
+            "Content-Type",
+            "application/x-www-form-urlencoded"
+          );
+          xhttp.send(params);
+          xhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+              console.log(this.responseText);
+              document.getElementById("demo").innerHTML = this.responseText;
+            }
+          };
+        }
+      }
+    </script>
+  </body>
+</html>

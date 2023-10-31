@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <button onclick="location.href = './store.html'">Go to Store</button>
+    <br />
+    <br />
+    <label for="word">Word:</label>
+    <input type="text" id="word" name="word" placeholder="Enter name of word" />
+    <br />
+    <br />
+    <button type="button" onclick="getWord()">GET WORD</button>
+    <br />
+    <br />
+    <button type="button" onclick="getLanguage()">GET LANGUAGES</button>
+    <br />
+    <br />
+    <p>Definition:</p>
+    <br />
+    <br />
+    <div id="demo">No Response Yet!</div>
+    <script>
+      function getWord() {
+        const xhttp = new XMLHttpRequest();
+        const endPointRoot = "http://localhost:8888/api/v1/";
+        let word = document.getElementById("word");
+        let params = `${word.value}`;
+        let resource = "definition/";
+        if (word.value != "") {
+          const url = endPointRoot + resource + params;
+          xhttp.open("GET", url, true);
+          xhttp.send();
+          xhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+              document.getElementById("demo").innerHTML = this.responseText;
+            }
+          };
+        }
+      }
+
+      function getLanguage() {
+        const xhttp = new XMLHttpRequest();
+        const endPointRoot = "http://localhost:8888/api/v1/";
+        let resource = "languages/";
+        const url = endPointRoot + resource;
+        xhttp.open("GET", url, true);
+        xhttp.send();
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                document.getElementById("demo").innerHTML = this.responseText;
+            }
+        };
+      }
+    </script>
+  </body>
+</html>
