@@ -6,6 +6,8 @@
     <br />
     <label for="word">Word:</label>
     <input type="text" id="word" name="word" placeholder="Enter name of word" />
+    <label for="word_lang">Word Language:</label>
+    <select name="word_language" id="word_lang" required></select>
     <br />
     <br />
     <textarea
@@ -13,59 +15,124 @@
       placeholder="Enter the definition of the word"
       rows="4"
       cols="50"
-
     ></textarea>
+    <label for="definition_lang">Definition Language:</label>
+    <select name="definition_language" id="definition_lang" required></select>
     <br />
     <br />
     <button type="button" onclick="post()">POST</button>
-    <button type="button" onclick="patch()">PATCH</button>
     <br />
     <br />
-    <div id="demo">No Response Yet!</div>
+    <div id="status"></div>
+    <br />
+    <pre id="demo">No Response Yet!</pre>
     <script>
+      const xhttp = new XMLHttpRequest();
+      const endPointRoot = "http://localhost:8888/api/v1/";
+      let resource = "definition/";
+      const missingDescriptionJson = `{message: Entry missing definition, entry: `;
+      const missingEntryJson = `{message: Entry missing a word, entry: `;
+      let word_lang = document.getElementById("word_lang");
+      let definition_lang = document.getElementById("definition_lang");
+
+      // To populate dropdown with languages from the database when server runs.
+      xhttp.open("GET", "http://localhost:8888/", true);
+      xhttp.send();
+      xhttp.onreadystatechange = function () {
+        if (this.readyState == 4 && this.status == 200) {
+          let langJSON = JSON.parse(this.responseText);
+          for (let i = 0; i < langJSON.length; i++) {
+            let option1 = document.createElement("option");
+            option1.value = langJSON[i].lang;
+            option1.innerText = langJSON[i].lang;
+            word_lang.appendChild(option1);
+            let option2 = document.createElement("option");
+            option2.value = langJSON[i].lang;
+            option2.innerText = langJSON[i].lang;
+            definition_lang.appendChild(option2);
+          }
+        }
+      };
+
       function post() {
-        const xhttp = new XMLHttpRequest();
-        const endPointRoot = "http://localhost:8888/api/v1/";
+        word_lang = document.getElementById("word_lang");
+        definition_lang = document.getElementById("definition_lang");
         let word = document.getElementById("word");
         let definition = document.getElementById("definition");
-        let params = `${definition.value}`;
-        let resource = "definition/";
+        let params = {
+          word: word.value,
+          definition: definition.value,
+          word_lang: word_lang.value,
+          definition_lang: definition_lang.value,
+        };
+        checkParams(params);
         if (word.value != "" && definition.value != "") {
           xhttp.open("POST", endPointRoot + resource, true);
           xhttp.setRequestHeader(
             "Content-Type",
             "application/x-www-form-urlencoded"
           );
-          xhttp.send(params);
+          xhttp.send(JSON.stringify(params));
           xhttp.onreadystatechange = function () {
-            if (this.readyState == 4 && this.status == 200) {
+            if (this.readyState == 4) {
               console.log(this.responseText);
+              document.getElementById("status").innerHTML =
+                "Status Code: " + this.status;
               document.getElementById("demo").innerHTML = this.responseText;
             }
           };
         }
       }
-      
+
       function patch() {
-        const xhttp = new XMLHttpRequest();
-        const endPointRoot = "http://localhost:8888/api/v1/";
         let word = document.getElementById("word");
         let definition = document.getElementById("definition");
-        let params = `${word.value}`;
-        let resource = "definition/";
+        let params = {
+          word: word.value,
+          definition: definition.value,
+        };
+        checkParams(params);
         if (word.value != "" && definition.value != "") {
-          xhttp.open("PATCH", endPointRoot + resource, true);
+          xhttp.open("PATCH", endPointRoot + resource + word.value, true);
           xhttp.setRequestHeader(
             "Content-Type",
             "application/x-www-form-urlencoded"
           );
-          xhttp.send(params);
+          xhttp.send(JSON.stringify(params));
           xhttp.onreadystatechange = function () {
-            if (this.readyState == 4 && this.status == 200) {
-              console.log(this.responseText);
-              document.getElementById("demo").innerHTML = this.responseText;
+            if (this.readyState == 4) {
+              document.getElementById("status").innerHTML =
+                "Status Code: " + this.status;
+
+              let jsonResponse = JSON.parse(this.responseText);
+              document.getElementById("demo").innerHTML = jsonResponse;
             }
           };
+        }
+      }
+
+      function parseHTML(data) {
+        return data
+          .replace("<", "&lt;")
+          .replace(">", "&gt;")
+          .replace("/", "&sol;");
+      }
+
+      function checkParams(params) {
+        if (params.word == "") {
+          document.getElementById("status").innerHTML =
+            "Status Code: 400 Bad Request";
+          let responseJson = missingEntryJson;
+          responseJson += `{word: ${params.word}, definition: ${params.definition}}}`;
+          document.getElementById("demo").innerHTML = responseJson;
+        }
+
+        if (params.definition == "") {
+          document.getElementById("status").innerHTML =
+            "Status Code: 400 Bad Request";
+          let responseJson = missingDescriptionJson;
+          responseJson += `{word: ${params.word}, definition: ${params.definition}}}`;
+          document.getElementById("demo").innerHTML = responseJson;
         }
       }
     </script>

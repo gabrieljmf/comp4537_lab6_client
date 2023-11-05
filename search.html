@@ -1,7 +1,32 @@
 <!DOCTYPE html>
 <html>
+  <head>
+    <style>
+      /* Part of the styling is from W3Schools: https://www.w3schools.com/html/html_tables.asp */
+      h1 {
+        font-family: arial, sans-serif;
+      }
+      table {
+        font-family: arial, sans-serif;
+        border-collapse: collapse;
+        width: 100%;
+      }
+
+      td,
+      th {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+      }
+
+      th,
+      tr:nth-child(odd) {
+        background-color: #dddddd;
+      }
+    </style>
+  </head>
   <body>
-    <button onclick="location.href = './store.html'">Go to Store</button>
+    <button onclick="location.href = './write.html'">Go to Store</button>
     <br />
     <br />
     <label for="word">Word:</label>
@@ -9,28 +34,53 @@
     <br />
     <br />
     <button type="button" onclick="getWord()">GET WORD</button>
+    <button type="button" onclick="deleteWord()">DELETE WORD</button>
+    <br />
+    <br />
+    <div id="status"></div>
+    <br />
+    <div id="demo">No Response for Word Yet!</div>
     <br />
     <br />
     <button type="button" onclick="getLanguage()">GET LANGUAGES</button>
     <br />
     <br />
-    <p>Definition:</p>
-    <br />
-    <br />
-    <div id="demo">No Response Yet!</div>
+    <pre id="lang_output">No Response Yet for Language Yet!</pre>
     <script>
+      const xhttp = new XMLHttpRequest();
+      const endPointRoot = "http://localhost:8888/api/v1/";
+      let definition = "definition/";
+      let languages = "languages/";
+
       function getWord() {
-        const xhttp = new XMLHttpRequest();
-        const endPointRoot = "http://localhost:8888/api/v1/";
         let word = document.getElementById("word");
         let params = `${word.value}`;
-        let resource = "definition/";
         if (word.value != "") {
-          const url = endPointRoot + resource + params;
+          const url = endPointRoot + definition + params;
+          console.log(url);
           xhttp.open("GET", url, true);
           xhttp.send();
           xhttp.onreadystatechange = function () {
-            if (this.readyState == 4 && this.status == 200) {
+            if (this.readyState == 4) {
+              document.getElementById("status").innerHTML =
+                "Status Code: " + this.status;
+              document.getElementById("demo").innerHTML = this.responseText;
+            }
+          };
+        }
+      }
+
+      function deleteWord() {
+        let word = document.getElementById("word");
+        let params = `${word.value}`;
+        if (word.value != "") {
+          const url = endPointRoot + definition + params;
+          xhttp.open("DELETE", url, true);
+          xhttp.send();
+          xhttp.onreadystatechange = function () {
+            if (this.readyState == 4) {
+              document.getElementById("status").innerHTML =
+                "Status Code: " + this.status;
               document.getElementById("demo").innerHTML = this.responseText;
             }
           };
@@ -38,16 +88,14 @@
       }
 
       function getLanguage() {
-        const xhttp = new XMLHttpRequest();
-        const endPointRoot = "http://localhost:8888/api/v1/";
-        let resource = "languages/";
-        const url = endPointRoot + resource;
+        const url = endPointRoot + languages;
         xhttp.open("GET", url, true);
         xhttp.send();
         xhttp.onreadystatechange = function () {
-            if (this.readyState == 4 && this.status == 200) {
-                document.getElementById("demo").innerHTML = this.responseText;
-            }
+          if (this.readyState == 4) {
+            document.getElementById("lang_output").innerHTML =
+              this.responseText;
+          }
         };
       }
     </script>
